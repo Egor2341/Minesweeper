@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.minesweeper;
 
 import java.util.ArrayList;
 
