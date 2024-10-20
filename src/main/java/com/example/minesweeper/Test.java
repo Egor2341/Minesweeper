@@ -53,7 +53,7 @@ public class Test {
                     neighbors.add(i - width - 1);
                 }
             }
-            field.put(i, new Cell("Closed", neighbors));
+            field.put(i, new Cell<>("Closed", neighbors));
             }
         mines(width * height);
     }

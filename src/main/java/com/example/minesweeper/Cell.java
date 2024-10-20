@@ -2,11 +2,16 @@ package com.example.minesweeper;
 
 import java.util.ArrayList;
 
-public class Cell {
+public class Cell<B> {
     private String status;
     private ArrayList<Integer> neighbors;
+    private B button;
 
-    public Cell(String status, ArrayList<Integer> neighbors){
+    public Cell(String status, ArrayList<Integer> neighbors, B button){
+        this.status = status;
+        this.neighbors = neighbors;
+        this.button = button;
+    }public Cell(String status, ArrayList<Integer> neighbors){
         this.status = status;
         this.neighbors = neighbors;
     }
@@ -19,11 +24,13 @@ public class Cell {
         return neighbors;
     }
 
-    public void setNeighbors(ArrayList<Integer> neighbors) {
-        this.neighbors = neighbors;
-    }
 
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public B getButton() {
+        return button;
+    }
+
 }
