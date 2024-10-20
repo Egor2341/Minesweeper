@@ -25,30 +25,39 @@ public class HelloController {
     private GridPane gridPane;
 
     private HashMap<Integer, Cell<Button>> field = new HashMap<>();
+    private int numberOfMines;
+    private ArrayList<Integer> arrayIDMines = new ArrayList<>();
 
     @FXML
     public void star(ActionEvent event) {
-        createField(Integer.parseInt(height.getText()), Integer.parseInt(width.getText()));
-        System.out.println(event);
+        createField(Integer.parseInt(width.getText()), Integer.parseInt(height.getText()));
     }
 
     private void messageError(String error) {
         System.err.println(error);
+        gridPane.add(new Button(), 8, 0);
     }
-
-    public void createField(int height, int width) {
-        if (height < 8 || width < 8) {
-            messageError("Некорректное значение размера.");
-        }
+    public void clear(){
+        numberOfMines=0;
+        arrayIDMines.clear();
         field.clear();
         gridPane.getRowConstraints().clear();
         gridPane.getColumnConstraints().clear();
         gridPane.getChildren().clear();
+        gridPane.disableProperty().setValue(false);
+    }
+    public void createField(int width, int height) {
+        if (height < 8 || width < 8 || height > 52 || width > 52) {
+            messageError("Некорректное значение размера.");
+            return;
+        }
+        clear();
+        numberOfMines = (int) (height * width * 0.15 + 0.5);
         for (int k = 0; k < width; k++) {
             gridPane.getColumnConstraints().add(new ColumnConstraints(gridPane.getPrefWidth() / width));
         }
         for (int k = 0; k < height; k++) {
-            gridPane.getColumnConstraints().add(new ColumnConstraints(gridPane.getPrefWidth() / height));
+            gridPane.getRowConstraints().add(new RowConstraints(gridPane.getPrefHeight() / height));
         }
         for (int i = 0; i < width * height; i++) {
             ArrayList<Integer> neighbors = getIntegers(height, width, i);
@@ -58,8 +67,8 @@ public class HelloController {
             bt.setPrefWidth(gridPane.getPrefWidth() / width);
             bt.setPrefHeight(gridPane.getPrefHeight() / height);
             bt.setOnAction(_ -> clickOnCell(Integer.parseInt(bt.getId())));
-            gridPane.add(bt, i % width, i / height);
-
+            gridPane.add(bt, i % (width), i / width);
+            System.err.println(bt.getId() + " " + i % (width) + " " + i / width);
             field.put(i, new Cell<>("Closed", neighbors, bt));
         }
         mines(width * height);
@@ -96,20 +105,19 @@ public class HelloController {
 
     private void mines(int size) {
         HashSet<Integer> minesId = new HashSet<>();
-        int count = (int) (size * 0.15 + 0.5);
-        while (minesId.size() < count) {
+        while (minesId.size() < numberOfMines) {
             minesId.add((int) (Math.random() * size));
         }
 
-        for (int i : minesId) {
-            field.get(i).setStatus("Mine");
+        for (int id : minesId) {
+            field.get(id).setStatus("Mine");
+            arrayIDMines.add(id);
         }
     }
 
 
     private void checkNeighbors(int id) {
         if (!field.get(id).getStatus().equals("Closed") | field.get(id).getStatus().equals("Mine")) {
-            System.err.println(field.get(id).getStatus());
             return;
         }
         int countOfMines = 0;
@@ -142,15 +150,20 @@ public class HelloController {
         bt.setStyle("");
         bt.setDisable(true);
         if (field.get(id).getStatus().equals("Mine")) {
-            Image mineIco = new Image("file:src/main/java/com/example/minesweeper/mine.png", bt.getPrefWidth() - 10, bt.getPrefHeight() - 10, true, true);
-            ImageView mine = new ImageView(mineIco);
-            bt.setGraphic(mine);
             loss();
         }
         checkNeighbors(id);
     }
 
     private void loss() {
+        for (int id : arrayIDMines) {
+            Button bt = field.get(id).getButton();
+            bt.setDisable(true);
+            Image mineIco = new Image("file:src/main/java/com/example/minesweeper/mine.png", bt.getPrefWidth() - 10, bt.getPrefHeight() - 10, true, true);
+            ImageView mine = new ImageView(mineIco);
+            bt.setGraphic(mine);
+        }
+        gridPane.disableProperty().setValue(true);
         System.out.println("Упс! Вы подорвались на мине!");
     }
 
@@ -159,7 +172,7 @@ public class HelloController {
         assert width != null : "fx:id=\"width\" was not injected: check your FXML file 'game.fxml'.";
         assert height != null : "fx:id=\"height\" was not injected: check your FXML file 'game.fxml'.";
         assert gridPane != null : "fx:id=\"gridPane\" was not injected: check your FXML file 'game.fxml'.";
-        createField(8, 8);
+        createField(8, 10);
     }
 
 }
