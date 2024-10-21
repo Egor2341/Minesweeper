@@ -6,7 +6,6 @@ public class Cell<B> {
     private boolean isClosed = true;
     private boolean isMine = false;
     private boolean isFlag = false;
-    private int number;
     private final ArrayList<Integer> neighbors;
     private final B button;
 
@@ -48,11 +47,4 @@ public class Cell<B> {
         return button;
     }
 
-    public int getNumber() {
-        return number;
-    }
-
-    public void setNumber(int number) {
-        this.number = number;
-    }
 }

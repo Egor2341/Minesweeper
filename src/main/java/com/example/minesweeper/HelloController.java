@@ -33,21 +33,21 @@ public class HelloController {
     private final HashMap<Integer, Cell<Button>> field = new HashMap<>();
     private int numberOfMines;
     private final ArrayList<Integer> arrayIDMines = new ArrayList<>();
-    private int numberOfFlags;
-    private HashSet<Integer> opened = new HashSet<>();
+    private final HashSet<Integer> opened = new HashSet<>();
 
     @FXML
     public void star() {
         createField(Integer.parseInt(width.getText()), Integer.parseInt(height.getText()));
     }
 
-    private void messageError(String error) {
-        System.err.println(error);
+    private void messageError() {
+
+        System.err.println("Некорректное значение размера.");
     }
 
     public void createField(int width, int height) {
         if (height < 8 || width < 8 || height > 52 || width > 52) {
-            messageError("Некорректное значение размера.");
+            messageError();
             return;
         }
         clear();
@@ -80,7 +80,6 @@ public class HelloController {
     public void clear() {
         numberOfMines = 0;
         arrayIDMines.clear();
-        numberOfFlags = 0;
         opened.clear();
         field.clear();
         gridPane.getRowConstraints().clear();
@@ -163,7 +162,6 @@ public class HelloController {
                 checkNeighbors(cell);
             }
         } else {
-            field.get(id).setNumber(countOfMines);
             bt.setText("" + countOfMines);
             bt.setStyle("-fx-border-color: #7b7b7b #00000000 #000000 #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:20px");
         }
@@ -189,13 +187,11 @@ public class HelloController {
             if (cell.isFlag()) {
                 bt.setGraphic(null);
                 cell.setFlag(false);
-                numberOfMines--;
             } else if (cell.isClosed()) {
                 Image mineIco = new Image("file:src/main/java/com/example/minesweeper/flag.png", 30, 30, true, true);
                 ImageView mine = new ImageView(mineIco);
                 bt.setGraphic(mine);
                 cell.setFlag(true);
-                numberOfFlags++;
             }
         }
         if (opened.size() == field.size() - numberOfMines) win();
