@@ -34,6 +34,7 @@ public class HelloController {
     private int numberOfMines;
     private final ArrayList<Integer> arrayIDMines = new ArrayList<>();
     private final HashSet<Integer> opened = new HashSet<>();
+    private final int sqr = 55;
 
     @FXML
     public void star() {
@@ -52,25 +53,30 @@ public class HelloController {
         }
         clear();
         numberOfMines = (int) (height * width * 0.15 + 0.5);
-        gridPane.setPrefWidth(56 * width);
-        gridPane.setPrefHeight(56 * height);
-        head.setPrefWidth(56 * width);
-        body.setPrefWidth(56 * width + 50);
-        anchor.setPrefWidth(56 * width + 80);
+        head.setPrefWidth((sqr + 1) * width);
+        head.setLayoutX((double) sqr / 2);
+        head.setLayoutY((double) sqr / 2);
+        gridPane.setPrefWidth((sqr + 1) * width);
+        gridPane.setPrefHeight((sqr + 1) * height);
+        gridPane.setLayoutX((double) sqr / 2);
+        gridPane.setLayoutY(sqr + head.getPrefHeight());
+        body.setPrefWidth(gridPane.getPrefWidth() + sqr);
+        body.setPrefHeight(gridPane.getPrefHeight() + head.getPrefHeight() + 1.5 * sqr);
+        anchor.setPrefWidth(gridPane.getPrefWidth() + sqr * 2);
 
         for (int k = 0; k < width; k++) {
-            gridPane.getColumnConstraints().add(new ColumnConstraints(55));
+            gridPane.getColumnConstraints().add(new ColumnConstraints(sqr));
         }
         for (int k = 0; k < height; k++) {
-            gridPane.getRowConstraints().add(new RowConstraints(55));
+            gridPane.getRowConstraints().add(new RowConstraints(sqr));
         }
         for (int i = 0; i < width * height; i++) {
             ArrayList<Integer> neighbors = getIntegers(height, width, i);
             Button bt = new Button();
             bt.setId(String.valueOf(i));
             bt.setStyle("-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;");
-            bt.setPrefWidth(55);
-            bt.setPrefHeight(55);
+            bt.setPrefWidth(sqr);
+            bt.setPrefHeight(sqr);
             bt.setOnMouseClicked(e -> clickOnCell(Integer.parseInt(bt.getId()), e));
             gridPane.add(bt, i % (width), i / width);
             field.put(i, new Cell<>(neighbors, bt));
@@ -141,6 +147,7 @@ public class HelloController {
 
 
     private void checkNeighbors(int id) {
+        String[] colors = {"blue", "green", "red", "cyan", "black", "black", "black", "black"};
         if (!field.get(id).isClosed() | field.get(id).isMine() | opened.contains(id)) {
             return;
         }
@@ -157,13 +164,13 @@ public class HelloController {
         bt.setOpacity(1);
         if (countOfMines == 0) {
             field.get(id).setClosed(false);
-            bt.setStyle("-fx-border-color: #7b7b7b #00000000 #000000 #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid;");
+            bt.setStyle("-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid;");
             for (int cell : neighbors) {
                 checkNeighbors(cell);
             }
         } else {
             bt.setText("" + countOfMines);
-            bt.setStyle("-fx-border-color: #7b7b7b #00000000 #000000 #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:20px");
+            bt.setStyle("-fx-text-fill:" + colors[countOfMines - 1] + ";-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:" + (sqr / 2 - 2) + "px; -fx-font-weight:900");
         }
     }
 
@@ -172,7 +179,7 @@ public class HelloController {
 
 
         if (event.getButton() == MouseButton.PRIMARY & !field.get(id).isFlag()) {
-            bt.setStyle("-fx-border-radius:0");
+
             bt.setDisable(true);
             bt.setOpacity(1);
             if (arrayIDMines.isEmpty()) {
@@ -210,7 +217,7 @@ public class HelloController {
         System.out.println("Упс! Вы подорвались на мине!");
     }
 
-    private void win(){
+    private void win() {
         gridPane.disableProperty().setValue(true);
         System.out.println("Респект! Вы разминировали поле!");
     }
