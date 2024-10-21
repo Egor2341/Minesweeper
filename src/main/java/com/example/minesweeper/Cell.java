@@ -3,21 +3,40 @@ package com.example.minesweeper;
 import java.util.ArrayList;
 
 public class Cell<B> {
-    private String status;
-    private ArrayList<Integer> neighbors;
-    private B button;
+    private boolean isClosed = true;
+    private boolean isMine = false;
+    private boolean isFlag = false;
+    private int number;
+    private final ArrayList<Integer> neighbors;
+    private final B button;
 
-    public Cell(String status, ArrayList<Integer> neighbors, B button){
-        this.status = status;
+    public Cell(ArrayList<Integer> neighbors, B button) {
         this.neighbors = neighbors;
         this.button = button;
-    }public Cell(String status, ArrayList<Integer> neighbors){
-        this.status = status;
-        this.neighbors = neighbors;
     }
 
-    public String getStatus() {
-        return status;
+    public boolean isClosed() {
+        return isClosed;
+    }
+
+    public void setClosed(boolean isClosed) {
+        this.isClosed = isClosed;
+    }
+
+    public boolean isMine() {
+        return isMine;
+    }
+
+    public void setMine(boolean isMine) {
+        this.isMine = isMine;
+    }
+
+    public boolean isFlag() {
+        return isFlag;
+    }
+
+    public void setFlag(boolean isFlag) {
+        this.isFlag = isFlag;
     }
 
     public ArrayList<Integer> getNeighbors() {
@@ -25,12 +44,15 @@ public class Cell<B> {
     }
 
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public B getButton() {
         return button;
     }
 
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
+    }
 }

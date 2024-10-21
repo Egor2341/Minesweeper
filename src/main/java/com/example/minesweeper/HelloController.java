@@ -2,8 +2,6 @@ package com.example.minesweeper;
 
 import javafx.fxml.FXML;
 
-import javafx.event.ActionEvent;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +10,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 
 
@@ -20,32 +20,31 @@ public class HelloController {
     @FXML
     public TextField width;
     @FXML
+    public Pane head;
+    @FXML
+    public Pane body;
+    @FXML
+    public AnchorPane anchor;
+    @FXML
     public TextField height;
     @FXML
     private GridPane gridPane;
 
-    private HashMap<Integer, Cell<Button>> field = new HashMap<>();
+    private final HashMap<Integer, Cell<Button>> field = new HashMap<>();
     private int numberOfMines;
-    private ArrayList<Integer> arrayIDMines = new ArrayList<>();
+    private final ArrayList<Integer> arrayIDMines = new ArrayList<>();
+    private int numberOfFlags;
+    private HashSet<Integer> opened = new HashSet<>();
 
     @FXML
-    public void star(ActionEvent event) {
+    public void star() {
         createField(Integer.parseInt(width.getText()), Integer.parseInt(height.getText()));
     }
 
     private void messageError(String error) {
         System.err.println(error);
-        gridPane.add(new Button(), 8, 0);
     }
-    public void clear(){
-        numberOfMines=0;
-        arrayIDMines.clear();
-        field.clear();
-        gridPane.getRowConstraints().clear();
-        gridPane.getColumnConstraints().clear();
-        gridPane.getChildren().clear();
-        gridPane.disableProperty().setValue(false);
-    }
+
     public void createField(int width, int height) {
         if (height < 8 || width < 8 || height > 52 || width > 52) {
             messageError("Некорректное значение размера.");
@@ -53,25 +52,41 @@ public class HelloController {
         }
         clear();
         numberOfMines = (int) (height * width * 0.15 + 0.5);
+        gridPane.setPrefWidth(56 * width);
+        gridPane.setPrefHeight(56 * height);
+        head.setPrefWidth(56 * width);
+        body.setPrefWidth(56 * width + 50);
+        anchor.setPrefWidth(56 * width + 80);
+
         for (int k = 0; k < width; k++) {
-            gridPane.getColumnConstraints().add(new ColumnConstraints(gridPane.getPrefWidth() / width));
+            gridPane.getColumnConstraints().add(new ColumnConstraints(55));
         }
         for (int k = 0; k < height; k++) {
-            gridPane.getRowConstraints().add(new RowConstraints(gridPane.getPrefHeight() / height));
+            gridPane.getRowConstraints().add(new RowConstraints(55));
         }
         for (int i = 0; i < width * height; i++) {
             ArrayList<Integer> neighbors = getIntegers(height, width, i);
             Button bt = new Button();
             bt.setId(String.valueOf(i));
             bt.setStyle("-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;");
-            bt.setPrefWidth(gridPane.getPrefWidth() / width);
-            bt.setPrefHeight(gridPane.getPrefHeight() / height);
-            bt.setOnAction(_ -> clickOnCell(Integer.parseInt(bt.getId())));
+            bt.setPrefWidth(55);
+            bt.setPrefHeight(55);
+            bt.setOnMouseClicked(e -> clickOnCell(Integer.parseInt(bt.getId()), e));
             gridPane.add(bt, i % (width), i / width);
-            System.err.println(bt.getId() + " " + i % (width) + " " + i / width);
-            field.put(i, new Cell<>("Closed", neighbors, bt));
+            field.put(i, new Cell<>(neighbors, bt));
         }
-        mines(width * height);
+    }
+
+    public void clear() {
+        numberOfMines = 0;
+        arrayIDMines.clear();
+        numberOfFlags = 0;
+        opened.clear();
+        field.clear();
+        gridPane.getRowConstraints().clear();
+        gridPane.getColumnConstraints().clear();
+        gridPane.getChildren().clear();
+        gridPane.disableProperty().setValue(false);
     }
 
     private ArrayList<Integer> getIntegers(int height, int width, int i) {
@@ -103,68 +118,105 @@ public class HelloController {
         return neighbors;
     }
 
-    private void mines(int size) {
+    private void mines(int id, ArrayList<Integer> neighbors) {
         HashSet<Integer> minesId = new HashSet<>();
+        neighbors.add(id);
+
         while (minesId.size() < numberOfMines) {
-            minesId.add((int) (Math.random() * size));
+            int mineId = (int) (Math.random() * field.size());
+            boolean addMine = true;
+            for (int n : neighbors) {
+                if (n == mineId) {
+                    addMine = false;
+                    break;
+                }
+            }
+            if (addMine) {
+                minesId.add(mineId);
+                field.get(mineId).setMine(true);
+                arrayIDMines.add(mineId);
+            }
         }
 
-        for (int id : minesId) {
-            field.get(id).setStatus("Mine");
-            arrayIDMines.add(id);
-        }
     }
 
 
     private void checkNeighbors(int id) {
-        if (!field.get(id).getStatus().equals("Closed") | field.get(id).getStatus().equals("Mine")) {
+        if (!field.get(id).isClosed() | field.get(id).isMine() | opened.contains(id)) {
             return;
         }
+        opened.add(id);
         int countOfMines = 0;
         ArrayList<Integer> neighbors = field.get(id).getNeighbors();
         for (int cell : neighbors) {
-            if (field.get(cell).getStatus().equals("Mine")) {
+            if (field.get(cell).isMine()) {
                 countOfMines += 1;
             }
         }
+        Button bt = field.get(id).getButton();
+        bt.setDisable(true);
+        bt.setOpacity(1);
         if (countOfMines == 0) {
-            field.get(id).setStatus("Opened");
-            Button bt = field.get(id).getButton();
-            bt.setStyle("");
-            bt.setDisable(true);
+            field.get(id).setClosed(false);
+            bt.setStyle("-fx-border-color: #7b7b7b #00000000 #000000 #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid;");
             for (int cell : neighbors) {
                 checkNeighbors(cell);
             }
         } else {
-            field.get(id).setStatus("" + countOfMines);
-            Button bt = field.get(id).getButton();
+            field.get(id).setNumber(countOfMines);
             bt.setText("" + countOfMines);
-            bt.setDisable(true);
-            bt.setStyle("-fx-font-size: 20px");
-            return;
+            bt.setStyle("-fx-border-color: #7b7b7b #00000000 #000000 #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:20px");
         }
     }
 
-    private void clickOnCell(int id) {
+    private void clickOnCell(int id, MouseEvent event) {
         Button bt = field.get(id).getButton();
-        bt.setStyle("");
-        bt.setDisable(true);
-        if (field.get(id).getStatus().equals("Mine")) {
-            loss();
+
+
+        if (event.getButton() == MouseButton.PRIMARY & !field.get(id).isFlag()) {
+            bt.setStyle("-fx-border-radius:0");
+            bt.setDisable(true);
+            bt.setOpacity(1);
+            if (arrayIDMines.isEmpty()) {
+                mines(id, field.get(id).getNeighbors());
+            }
+            if (field.get(id).isMine()) {
+                loss();
+            }
+            checkNeighbors(id);
+        } else if (event.getButton() == MouseButton.SECONDARY) {
+            Cell<Button> cell = field.get(id);
+            if (cell.isFlag()) {
+                bt.setGraphic(null);
+                cell.setFlag(false);
+                numberOfMines--;
+            } else if (cell.isClosed()) {
+                Image mineIco = new Image("file:src/main/java/com/example/minesweeper/flag.png", 30, 30, true, true);
+                ImageView mine = new ImageView(mineIco);
+                bt.setGraphic(mine);
+                cell.setFlag(true);
+                numberOfFlags++;
+            }
         }
-        checkNeighbors(id);
+        if (opened.size() == field.size() - numberOfMines) win();
     }
 
     private void loss() {
         for (int id : arrayIDMines) {
             Button bt = field.get(id).getButton();
             bt.setDisable(true);
-            Image mineIco = new Image("file:src/main/java/com/example/minesweeper/mine.png", bt.getPrefWidth() - 10, bt.getPrefHeight() - 10, true, true);
-            ImageView mine = new ImageView(mineIco);
-            bt.setGraphic(mine);
+            bt.setOpacity(1);
+            Image mineIco = new Image("file:src/main/java/com/example/minesweeper/mine.png", 30, 30, true, true);
+            bt.graphicProperty().setValue(new ImageView(mineIco));
+
         }
         gridPane.disableProperty().setValue(true);
         System.out.println("Упс! Вы подорвались на мине!");
+    }
+
+    private void win(){
+        gridPane.disableProperty().setValue(true);
+        System.out.println("Респект! Вы разминировали поле!");
     }
 
     @FXML
@@ -172,6 +224,9 @@ public class HelloController {
         assert width != null : "fx:id=\"width\" was not injected: check your FXML file 'game.fxml'.";
         assert height != null : "fx:id=\"height\" was not injected: check your FXML file 'game.fxml'.";
         assert gridPane != null : "fx:id=\"gridPane\" was not injected: check your FXML file 'game.fxml'.";
+        assert body != null : "fx:id=\"body\" was not injected: check your FXML file 'game.fxml'.";
+        assert anchor != null : "fx:id=\"anchor\" was not injected: check your FXML file 'game.fxml'.";
+        assert head != null : "fx:id=\"head\" was not injected: check your FXML file 'game.fxml'.";
         createField(8, 10);
     }
 
