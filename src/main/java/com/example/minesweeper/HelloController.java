@@ -147,7 +147,7 @@ public class HelloController {
 
 
     private void checkNeighbors(int id) {
-        String[] colors = {"blue", "green", "red", "cyan", "black", "black", "black", "black"};
+        String[] colors = {"blue", "green", "red", "yellow", "purple", "orange", "black", "black"};
         if (!field.get(id).isClosed() | field.get(id).isMine() | opened.contains(id)) {
             return;
         }
