@@ -18,9 +18,9 @@ import javafx.scene.layout.*;
 public class HelloController {
 
     @FXML
-    public TextField TextFieldWidth;
+    public TextField textFieldWidth;
     @FXML
-    public TextField TextFieldHeight;
+    public TextField textFieldHeight;
     @FXML
     public Pane head;
     @FXML
@@ -28,18 +28,20 @@ public class HelloController {
     @FXML
     public AnchorPane anchor;
     @FXML
+    public Button smile;
+    @FXML
     private GridPane gridPane;
 
     private final HashMap<Integer, Cell<Button>> field = new HashMap<>();
-    private int numberOfMines;
     private final ArrayList<Integer> arrayIDMines = new ArrayList<>();
     private final HashSet<Integer> opened = new HashSet<>();
+    private int numberOfMines;
     private final int sqr = 55;
     private int flags;
 
     @FXML
     public void check(int index) {
-        TextField field = new TextField[]{TextFieldWidth, TextFieldHeight}[index];
+        TextField field = new TextField[]{textFieldWidth, textFieldHeight}[index];
         field.setText(field.getText().replaceAll("\\D", ""));
         if (field.getLength() > 2) field.deleteText(2, field.getLength());
         field.end();
@@ -47,25 +49,24 @@ public class HelloController {
 
     @FXML
     public void star() {
+        int newWidth = 8;
+        int newHeight = 8;
         try {
-            createField(Integer.parseInt(TextFieldWidth.getText()), Integer.parseInt(TextFieldHeight.getText()));
+            newWidth = Integer.parseInt(textFieldWidth.getText());
+            newHeight = Integer.parseInt(textFieldHeight.getText());
         } catch (NumberFormatException e) {
             System.err.println(e.getMessage());
         }
+        createField(newWidth, newHeight);
     }
 
     private void messageError() {
-
         System.err.println("Некорректное значение размера.");
     }
 
-    public void createField(int width, int height) {
-        if (height < 8 || width < 8 || height > 52 || width > 52) {
-            messageError();
-            return;
-        }
-        clear();
-        numberOfMines = (int) (height * width * 0.15 + 0.5);
+    private void setting(int width, int height) {
+        Image stateIco = new Image("file:src/main/java/com/example/minesweeper/state.png", 30, 30, true, true);
+        smile.graphicProperty().setValue(new ImageView(stateIco));
         head.setPrefWidth((sqr + 1) * width);
         head.setLayoutX((double) sqr / 2);
         head.setLayoutY((double) sqr / 2);
@@ -76,23 +77,11 @@ public class HelloController {
         body.setPrefWidth(gridPane.getPrefWidth() + sqr);
         body.setPrefHeight(gridPane.getPrefHeight() + head.getPrefHeight() + 1.5 * sqr);
         anchor.setPrefWidth(gridPane.getPrefWidth() + sqr * 2);
-
         for (int k = 0; k < width; k++) {
             gridPane.getColumnConstraints().add(new ColumnConstraints(sqr));
         }
         for (int k = 0; k < height; k++) {
             gridPane.getRowConstraints().add(new RowConstraints(sqr));
-        }
-        for (int i = 0; i < width * height; i++) {
-            ArrayList<Integer> neighbors = getIntegers(height, width, i);
-            Button bt = new Button();
-            bt.setId(String.valueOf(i));
-            bt.setStyle("-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-TextFieldWidth: 5px; -fx-border-style: solid;");
-            bt.setPrefWidth(sqr);
-            bt.setPrefHeight(sqr);
-            bt.setOnMouseClicked(e -> clickOnCell(Integer.parseInt(bt.getId()), e));
-            gridPane.add(bt, i % (width), i / width);
-            field.put(i, new Cell<>(neighbors, bt));
         }
     }
 
@@ -107,6 +96,28 @@ public class HelloController {
         gridPane.getChildren().clear();
         gridPane.disableProperty().setValue(false);
     }
+
+    private void createField(int width, int height) {
+        if (height < 8 || width < 8 || height > 52 || width > 52) {
+            messageError();
+            return;
+        }
+        clear();
+        setting(width, height);
+        numberOfMines = (int) (height * width * 0.15 + 0.5);
+        for (int i = 0; i < width * height; i++) {
+            ArrayList<Integer> neighbors = getIntegers(height, width, i);
+            Button bt = new Button();
+            bt.setId(String.valueOf(i));
+            bt.setStyle("-fx-background-color: #bdbdbd;-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;");
+            bt.setPrefWidth(sqr);
+            bt.setPrefHeight(sqr);
+            bt.setOnMouseClicked(e -> clickOnCell(Integer.parseInt(bt.getId()), e));
+            gridPane.add(bt, i % (width), i / width);
+            field.put(i, new Cell<>(neighbors, bt));
+        }
+    }
+
 
     private ArrayList<Integer> getIntegers(int height, int width, int i) {
         ArrayList<Integer> neighbors = new ArrayList<>();
@@ -189,7 +200,7 @@ public class HelloController {
             field.get(id).setMines(countOfMines);
 
             bt.setText("" + countOfMines);
-            bt.setStyle("-fx-text-fill:" + colors[countOfMines - 1] + ";-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-TextFieldWidth: 2px; -fx-border-style: solid; -fx-font-size:" + (sqr / 2 - 2) + "px; -fx-font-weight:900");
+            bt.setStyle("-fx-background-color: #bdbdbd;-fx-text-fill:" + colors[countOfMines - 1] + ";-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:" + (sqr / 2 - 2) + "px; -fx-font-weight:900");
         }
     }
 
@@ -241,9 +252,8 @@ public class HelloController {
                 cell.setFlag(false);
                 flags--;
             } else if (cell.isClosed()) {
-                Image mineIco = new Image("file:src/main/java/com/example/minesweeper/flag.png", 30, 30, true, true);
-                ImageView mine = new ImageView(mineIco);
-                bt.setGraphic(mine);
+                Image flagIco = new Image("file:src/main/java/com/example/minesweeper/flag.png", 30, 30, true, true);
+                bt.graphicProperty().setValue(new ImageView(flagIco));
                 cell.setFlag(true);
                 flags++;
             }
@@ -258,27 +268,30 @@ public class HelloController {
             bt.setOpacity(1);
             Image mineIco = new Image("file:src/main/java/com/example/minesweeper/mine.png", 30, 30, true, true);
             bt.graphicProperty().setValue(new ImageView(mineIco));
-
         }
         gridPane.disableProperty().setValue(true);
+        Image loseIco = new Image("file:src/main/java/com/example/minesweeper/loss.png", 30, 30, true, true);
+        smile.graphicProperty().setValue(new ImageView(loseIco));
         System.out.println("Упс! Вы подорвались на мине!");
     }
 
     private void win() {
+        Image winIco = new Image("file:src/main/java/com/example/minesweeper/win.png", 30, 30, true, true);
+        smile.graphicProperty().setValue(new ImageView(winIco));
         gridPane.disableProperty().setValue(true);
         System.out.println("Респект! Вы разминировали поле!");
     }
 
     @FXML
     void initialize() {
-        assert TextFieldWidth != null : "fx:id=\"TextFieldWidth\" was not injected: check your FXML file 'game.fxml'.";
-        assert TextFieldHeight != null : "fx:id=\"TextFieldHeight\" was not injected: check your FXML file 'game.fxml'.";
+        assert textFieldWidth != null : "fx:id=\"textFieldWidth\" was not injected: check your FXML file 'game.fxml'.";
+        assert textFieldHeight != null : "fx:id=\"textFieldHeight\" was not injected: check your FXML file 'game.fxml'.";
         assert gridPane != null : "fx:id=\"gridPane\" was not injected: check your FXML file 'game.fxml'.";
         assert body != null : "fx:id=\"body\" was not injected: check your FXML file 'game.fxml'.";
         assert anchor != null : "fx:id=\"anchor\" was not injected: check your FXML file 'game.fxml'.";
         assert head != null : "fx:id=\"head\" was not injected: check your FXML file 'game.fxml'.";
-        TextFieldWidth.setOnKeyTyped(_ -> check(0));
-        TextFieldHeight.setOnKeyTyped(_ -> check(1));
+        textFieldWidth.setOnKeyTyped(_ -> check(0));
+        textFieldHeight.setOnKeyTyped(_ -> check(1));
         createField(8, 10);
     }
 }
