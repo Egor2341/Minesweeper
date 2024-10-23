@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -30,6 +32,8 @@ public class HelloController {
     @FXML
     public Button smile;
     @FXML
+    public Label flagIndicator;
+    @FXML
     private GridPane gridPane;
 
     private final HashMap<Integer, Cell<Button>> field = new HashMap<>();
@@ -50,7 +54,7 @@ public class HelloController {
     @FXML
     public void star() {
         int newWidth = 8;
-        int newHeight = 8;
+        int newHeight = 10;
         try {
             newWidth = Integer.parseInt(textFieldWidth.getText());
             newHeight = Integer.parseInt(textFieldHeight.getText());
@@ -77,6 +81,7 @@ public class HelloController {
         body.setPrefWidth(gridPane.getPrefWidth() + sqr);
         body.setPrefHeight(gridPane.getPrefHeight() + head.getPrefHeight() + 1.5 * sqr);
         anchor.setPrefWidth(gridPane.getPrefWidth() + sqr * 2);
+        flagIndicator.setText(String.valueOf(numberOfMines));
         for (int k = 0; k < width; k++) {
             gridPane.getColumnConstraints().add(new ColumnConstraints(sqr));
         }
@@ -98,13 +103,13 @@ public class HelloController {
     }
 
     private void createField(int width, int height) {
-        if (height < 8 || width < 8 || height > 52 || width > 52) {
+        if (height < 8 || width < 8 || height > 21 || width > 49) {
             messageError();
             return;
         }
         clear();
-        setting(width, height);
         numberOfMines = (int) (height * width * 0.15 + 0.5);
+        setting(width, height);
         for (int i = 0; i < width * height; i++) {
             ArrayList<Integer> neighbors = getIntegers(height, width, i);
             Button bt = new Button();
@@ -112,6 +117,7 @@ public class HelloController {
             bt.setStyle("-fx-background-color: #bdbdbd;-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;");
             bt.setPrefWidth(sqr);
             bt.setPrefHeight(sqr);
+            bt.setOpacity(1);
             bt.setOnMouseClicked(e -> clickOnCell(Integer.parseInt(bt.getId()), e));
             gridPane.add(bt, i % (width), i / width);
             field.put(i, new Cell<>(neighbors, bt));
@@ -185,10 +191,8 @@ public class HelloController {
             }
         }
         Button bt = field.get(id).getButton();
-
-
+        field.get(id).setClosed(false);
         if (countOfMines == 0) {
-            field.get(id).setClosed(false);
             field.get(id).setMines(0);
             bt.setStyle("-fx-background-color: #bdbdbd; -fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-TextFieldWidth: 2px; -fx-border-style: solid;");
             bt.setDisable(true);
@@ -196,34 +200,32 @@ public class HelloController {
                 checkNeighbors(cell);
             }
         } else {
-            field.get(id).setClosed(false);
             field.get(id).setMines(countOfMines);
             bt.setText("" + countOfMines);
             bt.setStyle("-fx-background-color: #bdbdbd;-fx-text-fill:" + colors[countOfMines - 1] + ";-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:" + (sqr / 2 - 2) + "px; -fx-font-weight:900");
         }
     }
 
-    private void clickOnNumber(int id){
+    private void clickOnNumber(int id) {
         int flagsAround = 0; // число флажков вокруг клетки
         boolean possibleLoss = false;
         int minesAround = 0;
-        for (int n : field.get(id).getNeighbors()){
+        for (int n : field.get(id).getNeighbors()) {
             if (field.get(n).isFlag()) {
                 flagsAround++;
-                if (!field.get(n).isMine()){
+                if (!field.get(n).isMine()) {
                     possibleLoss = true;
                 }
             }
-            if (field.get(n).isMine()){
+            if (field.get(n).isMine()) {
                 minesAround++;
             }
         }
-        if (flagsAround == minesAround){
-            if (possibleLoss){
+        if (flagsAround == minesAround) {
+            if (possibleLoss) {
                 loss();
-            }
-            else {
-                for (int n : field.get(id).getNeighbors()){
+            } else {
+                for (int n : field.get(id).getNeighbors()) {
                     checkNeighbors(n);
                 }
             }
@@ -234,10 +236,9 @@ public class HelloController {
 
         Button bt = field.get(id).getButton();
         if (event.getButton() == MouseButton.PRIMARY & !field.get(id).isFlag()) {
-            if (field.get(id).getMines() != 0){
+            if (field.get(id).getMines() != 0) {
                 clickOnNumber(id);
-            }
-            else {
+            } else {
                 if (arrayIDMines.isEmpty()) {
                     mines(id, field.get(id).getNeighbors());
                 }
@@ -252,12 +253,13 @@ public class HelloController {
                 bt.setGraphic(null);
                 cell.setFlag(false);
                 flags--;
-            } else if (cell.isClosed()) {
+            } else if (cell.isClosed() & flags < numberOfMines) {
                 Image flagIco = new Image("file:src/main/java/com/example/minesweeper/flag.png", 30, 30, true, true);
                 bt.graphicProperty().setValue(new ImageView(flagIco));
                 cell.setFlag(true);
                 flags++;
             }
+            flagIndicator.setText(String.valueOf(numberOfMines - flags));
         }
         if (flags == numberOfMines && opened.size() == field.size() - numberOfMines) win();
     }
@@ -293,6 +295,8 @@ public class HelloController {
         assert head != null : "fx:id=\"head\" was not injected: check your FXML file 'game.fxml'.";
         textFieldWidth.setOnKeyTyped(_ -> check(0));
         textFieldHeight.setOnKeyTyped(_ -> check(1));
+        gridPane.setStyle("-fx-background-color: #bdbdbd; -fx-border-color: #7b7b7b #ffffff #ffffff #7b7b7b; -fx-border-width: 5px; -fx-border-style: solid;");
+        flagIndicator.setAlignment(Pos.CENTER);
         createField(8, 10);
     }
 }
