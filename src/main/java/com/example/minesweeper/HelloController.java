@@ -186,11 +186,11 @@ public class HelloController {
         }
         Button bt = field.get(id).getButton();
 
-        bt.setOpacity(1);
+
         if (countOfMines == 0) {
             field.get(id).setClosed(false);
             field.get(id).setMines(0);
-            bt.setStyle("-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-TextFieldWidth: 2px; -fx-border-style: solid;");
+            bt.setStyle("-fx-background-color: #bdbdbd; -fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-TextFieldWidth: 2px; -fx-border-style: solid;");
             bt.setDisable(true);
             for (int cell : neighbors) {
                 checkNeighbors(cell);
@@ -198,7 +198,6 @@ public class HelloController {
         } else {
             field.get(id).setClosed(false);
             field.get(id).setMines(countOfMines);
-
             bt.setText("" + countOfMines);
             bt.setStyle("-fx-background-color: #bdbdbd;-fx-text-fill:" + colors[countOfMines - 1] + ";-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:" + (sqr / 2 - 2) + "px; -fx-font-weight:900");
         }
@@ -232,19 +231,21 @@ public class HelloController {
     }
 
     private void clickOnCell(int id, MouseEvent event) {
-        if (field.get(id).getMines() != 0){
-            clickOnNumber(id);
-            return;
-        }
+
         Button bt = field.get(id).getButton();
         if (event.getButton() == MouseButton.PRIMARY & !field.get(id).isFlag()) {
-            if (arrayIDMines.isEmpty()) {
-                mines(id, field.get(id).getNeighbors());
+            if (field.get(id).getMines() != 0){
+                clickOnNumber(id);
             }
-            if (field.get(id).isMine()) {
-                loss();
+            else {
+                if (arrayIDMines.isEmpty()) {
+                    mines(id, field.get(id).getNeighbors());
+                }
+                if (field.get(id).isMine()) {
+                    loss();
+                }
+                checkNeighbors(id);
             }
-            checkNeighbors(id);
         } else if (event.getButton() == MouseButton.SECONDARY) {
             Cell<Button> cell = field.get(id);
             if (cell.isFlag()) {
