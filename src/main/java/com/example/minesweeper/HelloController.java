@@ -35,6 +35,7 @@ public class HelloController {
     private final ArrayList<Integer> arrayIDMines = new ArrayList<>();
     private final HashSet<Integer> opened = new HashSet<>();
     private final int sqr = 55;
+    private int flags;
 
     @FXML
     public void star() {
@@ -85,6 +86,7 @@ public class HelloController {
 
     public void clear() {
         numberOfMines = 0;
+        flags = 0;
         arrayIDMines.clear();
         opened.clear();
         field.clear();
@@ -194,14 +196,16 @@ public class HelloController {
             if (cell.isFlag()) {
                 bt.setGraphic(null);
                 cell.setFlag(false);
+                flags--;
             } else if (cell.isClosed()) {
                 Image mineIco = new Image("file:src/main/java/com/example/minesweeper/flag.png", 30, 30, true, true);
                 ImageView mine = new ImageView(mineIco);
                 bt.setGraphic(mine);
                 cell.setFlag(true);
+                flags++;
             }
         }
-        if (opened.size() == field.size() - numberOfMines) win();
+        if (flags == numberOfMines && opened.size() == field.size() - numberOfMines) win();
     }
 
     private void loss() {
