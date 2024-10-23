@@ -18,15 +18,15 @@ import javafx.scene.layout.*;
 public class HelloController {
 
     @FXML
-    public TextField width;
+    public TextField TextFieldWidth;
+    @FXML
+    public TextField TextFieldHeight;
     @FXML
     public Pane head;
     @FXML
     public Pane body;
     @FXML
     public AnchorPane anchor;
-    @FXML
-    public TextField height;
     @FXML
     private GridPane gridPane;
 
@@ -37,8 +37,20 @@ public class HelloController {
     private final int sqr = 55;
 
     @FXML
+    public void check(int index) {
+        TextField field = new TextField[]{TextFieldWidth, TextFieldHeight}[index];
+        field.setText(field.getText().replaceAll("\\D", ""));
+        if (field.getLength() > 2) field.deleteText(2, field.getLength());
+        field.end();
+    }
+
+    @FXML
     public void star() {
-        createField(Integer.parseInt(width.getText()), Integer.parseInt(height.getText()));
+        try {
+            createField(Integer.parseInt(TextFieldWidth.getText()), Integer.parseInt(TextFieldHeight.getText()));
+        } catch (NumberFormatException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     private void messageError() {
@@ -74,7 +86,7 @@ public class HelloController {
             ArrayList<Integer> neighbors = getIntegers(height, width, i);
             Button bt = new Button();
             bt.setId(String.valueOf(i));
-            bt.setStyle("-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;");
+            bt.setStyle("-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-TextFieldWidth: 5px; -fx-border-style: solid;");
             bt.setPrefWidth(sqr);
             bt.setPrefHeight(sqr);
             bt.setOnMouseClicked(e -> clickOnCell(Integer.parseInt(bt.getId()), e));
@@ -164,13 +176,13 @@ public class HelloController {
         bt.setOpacity(1);
         if (countOfMines == 0) {
             field.get(id).setClosed(false);
-            bt.setStyle("-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid;");
+            bt.setStyle("-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-TextFieldWidth: 2px; -fx-border-style: solid;");
             for (int cell : neighbors) {
                 checkNeighbors(cell);
             }
         } else {
             bt.setText("" + countOfMines);
-            bt.setStyle("-fx-text-fill:" + colors[countOfMines - 1] + ";-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-width: 2px; -fx-border-style: solid; -fx-font-size:" + (sqr / 2 - 2) + "px; -fx-font-weight:900");
+            bt.setStyle("-fx-text-fill:" + colors[countOfMines - 1] + ";-fx-border-color: #7b7b7b rgba(0,0,0,0) rgba(0,0,0,0) #7b7b7b ; -fx-border-TextFieldWidth: 2px; -fx-border-style: solid; -fx-font-size:" + (sqr / 2 - 2) + "px; -fx-font-weight:900");
         }
     }
 
@@ -224,13 +236,14 @@ public class HelloController {
 
     @FXML
     void initialize() {
-        assert width != null : "fx:id=\"width\" was not injected: check your FXML file 'game.fxml'.";
-        assert height != null : "fx:id=\"height\" was not injected: check your FXML file 'game.fxml'.";
+        assert TextFieldWidth != null : "fx:id=\"TextFieldWidth\" was not injected: check your FXML file 'game.fxml'.";
+        assert TextFieldHeight != null : "fx:id=\"TextFieldHeight\" was not injected: check your FXML file 'game.fxml'.";
         assert gridPane != null : "fx:id=\"gridPane\" was not injected: check your FXML file 'game.fxml'.";
         assert body != null : "fx:id=\"body\" was not injected: check your FXML file 'game.fxml'.";
         assert anchor != null : "fx:id=\"anchor\" was not injected: check your FXML file 'game.fxml'.";
         assert head != null : "fx:id=\"head\" was not injected: check your FXML file 'game.fxml'.";
+        TextFieldWidth.setOnKeyTyped(_ -> check(0));
+        TextFieldHeight.setOnKeyTyped(_ -> check(1));
         createField(8, 10);
     }
-
 }
