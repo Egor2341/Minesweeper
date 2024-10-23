@@ -8,6 +8,7 @@ public class Cell<B> {
     private boolean isFlag = false;
     private final ArrayList<Integer> neighbors;
     private final B button;
+    private int mines;
 
     public Cell(ArrayList<Integer> neighbors, B button) {
         this.neighbors = neighbors;
@@ -17,6 +18,7 @@ public class Cell<B> {
     public boolean isClosed() {
         return isClosed;
     }
+
 
     public void setClosed(boolean isClosed) {
         this.isClosed = isClosed;
@@ -47,4 +49,11 @@ public class Cell<B> {
         return button;
     }
 
+    public int getMines() {
+        return mines;
+    }
+
+    public void setMines(int mines) {
+        this.mines = mines;
+    }
 }
