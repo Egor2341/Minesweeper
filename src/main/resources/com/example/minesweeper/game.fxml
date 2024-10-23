@@ -17,20 +17,19 @@
         <Pane fx:id="head" layoutX="20.0" layoutY="19.0" prefHeight="72.0" prefWidth="924.0"
               style="-fx-background-color: #bdbdbd; -fx-border-width: 5px; -fx-border-color: #7b7b7b #ffffff  #ffffff  #7b7b7b; -fx-border-style: solid;">
 
-            <Button layoutX="370.0" layoutY="10.0" onAction="#star" prefHeight="52.0" prefWidth="52.0"
-                    style="-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;"
-                    styleClass="bob">
+            <Button fx:id="smile" layoutX="370.0" layoutY="10.0" onAction="#star" prefHeight="52.0" prefWidth="52.0"
+                    style="-fx-background-color: #bdbdbd;-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;"
+            >
                 <font>
                     <Font size="1.0"/>
                 </font>
             </Button>
-            <TextField fx:id="TextFieldWidth" promptText="width" layoutX="22.0" layoutY="10.0"
+            <TextField fx:id="textFieldWidth" promptText="width" layoutX="22.0" layoutY="10.0"
                        prefHeight="52.0" prefWidth="89.0"
-                       style="-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;"/>
-            <TextField fx:id="TextFieldHeight" promptText="height" layoutX="137.0" layoutY="10.0"
+                       style="-fx-prompt-text-fill: black;-fx-background-color: #bdbdbd; -fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;-fx-font-size:18; -fx-font-weight:500"/>
+            <TextField fx:id="textFieldHeight" promptText="height" layoutX="137.0" layoutY="10.0"
                        prefHeight="52.0" prefWidth="89.0"
-                       style="-fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;"
-                       styleClass="bob"/>
+                       style="-fx-prompt-text-fill: black;-fx-background-color: #bdbdbd; -fx-border-color: #ffffff #7b7b7b #7b7b7b #ffffff; -fx-border-width: 5px; -fx-border-style: solid;-fx-font-size:18; -fx-font-weight:500"/>
 
         </Pane>
         <GridPane fx:id="gridPane" layoutX="20.0" layoutY="111.0" prefHeight="440" prefWidth="440"
